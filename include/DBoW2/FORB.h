@@ -10,82 +10,96 @@
 #ifndef __D_T_F_ORB__
 #define __D_T_F_ORB__
 
-#include <opencv2/core.hpp>
-#include <vector>
-#include <string>
-
 #include "FClass.h"
 
-namespace DBoW2 {
+#include <opencv2/core.hpp>
+#include <string>
+#include <vector>
 
-/// Functions to manipulate BRIEF descriptors
-class FORB: protected FClass
+namespace DBoW2
 {
-public:
+/// Functions to manipulate BRIEF descriptors
+class FORB : protected FClass
+{
+   public:
+    /// Descriptor type
+    typedef cv::Mat TDescriptor;  // CV_8U
+    /// Pointer to a single descriptor
+    typedef const TDescriptor* pDescriptor;
+    /// Descriptor length (in bytes)
+    static const int L = 32;
 
-  /// Descriptor type
-  typedef cv::Mat TDescriptor; // CV_8U
-  /// Pointer to a single descriptor
-  typedef const TDescriptor *pDescriptor;
-  /// Descriptor length (in bytes)
-  static const int L = 32;
+    using BinaryDescriptor = std::array<int32_t, 8>;
 
-  /**
-   * Calculates the mean value of a set of descriptors
-   * @param descriptors
-   * @param mean mean descriptor
-   */
-  static void meanValue(const std::vector<pDescriptor> &descriptors, 
-    TDescriptor &mean);
-  
-  /**
-   * Calculates the distance between two descriptors
-   * @param a
-   * @param b
-   * @return distance
-   */
-  static double distance(const TDescriptor &a, const TDescriptor &b);
-  
-  /**
-   * Returns a string version of the descriptor
-   * @param a descriptor
-   * @return string version
-   */
-  static std::string toString(const TDescriptor &a);
-  
-  /**
-   * Returns a descriptor from a string
-   * @param a descriptor
-   * @param s string version
-   */
-  static void fromString(TDescriptor &a, const std::string &s);
-  
-  /**
-   * Returns a mat with the descriptors in float format
-   * @param descriptors
-   * @param mat (out) NxL 32F matrix
-   */
-  static void toMat32F(const std::vector<TDescriptor> &descriptors, 
-    cv::Mat &mat);
-  
-  /**
-   * Returns a mat with the descriptors in float format
-   * @param descriptors NxL CV_8U matrix
-   * @param mat (out) NxL 32F matrix
-   */
-  static void toMat32F(const cv::Mat &descriptors, cv::Mat &mat);
+    /**
+     * Calculates the mean value of a set of descriptors
+     * @param descriptors
+     * @param mean mean descriptor
+     */
+    static void meanValue(const std::vector<pDescriptor>& descriptors, TDescriptor& mean);
 
-  /**
-   * Returns a matrix with the descriptor in OpenCV format
-   * @param descriptors vector of N row descriptors
-   * @param mat (out) NxL CV_8U matrix
-   */
-  static void toMat8U(const std::vector<TDescriptor> &descriptors, 
-    cv::Mat &mat);
+    /**
+     * Calculates the distance between two descriptors
+     * @param a
+     * @param b
+     * @return distance
+     */
+    static double distance(const TDescriptor& a, const TDescriptor& b);
 
+    /**
+     * Returns a string version of the descriptor
+     * @param a descriptor
+     * @return string version
+     */
+    static std::string toString(const TDescriptor& a);
+
+    /**
+     * Returns a descriptor from a string
+     * @param a descriptor
+     * @param s string version
+     */
+    static void fromString(TDescriptor& a, const std::string& s);
+
+    /**
+     * Returns a mat with the descriptors in float format
+     * @param descriptors
+     * @param mat (out) NxL 32F matrix
+     */
+    static void toMat32F(const std::vector<TDescriptor>& descriptors, cv::Mat& mat);
+
+    /**
+     * Returns a mat with the descriptors in float format
+     * @param descriptors NxL CV_8U matrix
+     * @param mat (out) NxL 32F matrix
+     */
+    static void toMat32F(const cv::Mat& descriptors, cv::Mat& mat);
+
+    /**
+     * Returns a matrix with the descriptor in OpenCV format
+     * @param descriptors vector of N row descriptors
+     * @param mat (out) NxL CV_8U matrix
+     */
+    static void toMat8U(const std::vector<TDescriptor>& descriptors, cv::Mat& mat);
+
+    static void toBinary(const TDescriptor& a, BinaryDescriptor& b)
+    {
+        int32_t* rowPtrInt = reinterpret_cast<int32_t*>(a.data);
+        for (int i = 0; i < 8; ++i)
+        {
+            b[i] = rowPtrInt[i];
+        }
+    }
+    static void fromBinary(const BinaryDescriptor& a, TDescriptor& b)
+    {
+        b.create(1, FORB::L, CV_8U);
+        int32_t* rowPtrInt = reinterpret_cast<int32_t*>(b.data);
+        for (int i = 0; i < 8; ++i)
+        {
+            rowPtrInt[i] = a[i];
+        }
+    }
 };
 
-} // namespace DBoW2
+}  // namespace DBoW2
 
 #endif
-
