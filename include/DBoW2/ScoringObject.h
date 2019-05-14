@@ -2,7 +2,7 @@
  * File: ScoringObject.h
  * Date: November 2011
  * Author: Dorian Galvez-Lopez
- * Description: functions to compute bow scores 
+ * Description: functions to compute bow scores
  * License: see the LICENSE.txt file
  *
  */
@@ -12,84 +12,82 @@
 
 #include "BowVector.h"
 
-namespace DBoW2 {
+#include <cfloat>
 
-/// Base class of scoring functions
-class GeneralScoring
+namespace DBoW2
 {
-public:
-  /**
-   * Computes the score between two vectors. Vectors must be sorted and 
-   * normalized if necessary
-   * @param v (in/out)
-   * @param w (in/out)
-   * @return score
-   */
-  virtual double score(const BowVector &v, const BowVector &w) const = 0;
-
-  /**
-   * Returns whether a vector must be normalized before scoring according
-   * to the scoring scheme
-   * @param norm norm to use
-   * @return true iff must normalize
-   */
-  virtual bool mustNormalize(LNorm &norm) const = 0;
-
-  /// Log of epsilon
-	static const double LOG_EPS; 
-  // If you change the type of WordValue, make sure you change also the
-	// epsilon value (this is needed by the KL method)
-	
-  virtual ~GeneralScoring() {} //!< Required for virtual base classes	
-};
-
-/** 
- * Macro for defining Scoring classes
- * @param NAME name of class
- * @param MUSTNORMALIZE if vectors must be normalized to compute the score
- * @param NORM type of norm to use when MUSTNORMALIZE
- */
-#define __SCORING_CLASS(NAME, MUSTNORMALIZE, NORM) \
-  NAME: public GeneralScoring \
-  { public: \
+class L1Scoring
+{
+   public:
+    static constexpr bool mustNormalize = true;
+    static inline double LOG_EPS        = log(DBL_EPSILON);
     /** \
      * Computes score between two vectors \
      * @param v \
      * @param w \
      * @return score between v and w \
-     */ \
-    virtual double score(const BowVector &v, const BowVector &w) const; \
-    \
-    /** \
-     * Says if a vector must be normalized according to the scoring function \
-     * @param norm (out) if true, norm to use
-     * @return true iff vectors must be normalized \
-     */ \
-    virtual inline bool mustNormalize(LNorm &norm) const  \
-      { norm = NORM; return MUSTNORMALIZE; } \
-  }
-  
-/// L1 Scoring object
-class __SCORING_CLASS(L1Scoring, true, L1);
+     */
+    static double score(const BowVector& v1, const BowVector& v2)
+    {
+        BowVector::const_iterator v1_it, v2_it;
+        const BowVector::const_iterator v1_end = v1.end();
+        const BowVector::const_iterator v2_end = v2.end();
 
-/// L2 Scoring object
-class __SCORING_CLASS(L2Scoring, true, L2);
+        v1_it = v1.begin();
+        v2_it = v2.begin();
 
-/// Chi square Scoring object
-class __SCORING_CLASS(ChiSquareScoring, true, L1);
+        double score = 0;
 
-/// KL divergence Scoring object
-class __SCORING_CLASS(KLScoring, true, L1);
+        while (v1_it != v1_end && v2_it != v2_end)
+        {
+            const WordValue& vi = v1_it->second;
+            const WordValue& wi = v2_it->second;
 
-/// Bhattacharyya Scoring object
-class __SCORING_CLASS(BhattacharyyaScoring, true, L1);
+            if (v1_it->first == v2_it->first)
+            {
+                score += fabs(vi - wi) - fabs(vi) - fabs(wi);
 
-/// Dot product Scoring object
-class __SCORING_CLASS(DotProductScoring, false, L1);
+                // move v1 and v2 forward
+                ++v1_it;
+                ++v2_it;
+            }
+            else if (v1_it->first < v2_it->first)
+            {
+                // move v1 forward
+                v1_it = v1.lower_bound(v2_it->first);
+                // v1_it = (first element >= v2_it.id)
+            }
+            else
+            {
+                // move v2 forward
+                v2_it = v2.lower_bound(v1_it->first);
+                // v2_it = (first element >= v1_it.id)
+            }
+        }
 
-#undef __SCORING_CLASS
-  
-} // namespace DBoW2
+        // ||v - w||_{L1} = 2 + Sum(|v_i - w_i| - |v_i| - |w_i|)
+        //		for all i | v_i != 0 and w_i != 0
+        // (Nister, 2006)
+        // scaled_||v - w||_{L1} = 1 - 0.5 * ||v - w||_{L1}
+        score = -score / 2.0;
+
+        return score;  // [0..1]
+    }
+
+    //    /** \
+//     * Says if a vector must be normalized according to the scoring function \
+//     * @param norm (out) if true, norm to use
+    //     * @return true iff vectors must be normalized \
+//     */
+    //    static bool mustNormalize(LNorm& norm)
+    //    {
+    //        norm = L1;
+    //        return true;
+    //    }
+};
+
+
+
+}  // namespace DBoW2
 
 #endif
-

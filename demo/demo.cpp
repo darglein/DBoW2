@@ -22,10 +22,12 @@ using namespace std;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-void loadFeatures(vector<vector<cv::Mat>>& features);
-void changeStructure(const cv::Mat& plain, vector<cv::Mat>& out);
-void testVocCreation(const vector<vector<cv::Mat>>& features);
-void testDatabase(const vector<vector<cv::Mat>>& features);
+using Descriptor = FORB::TDescriptor;
+
+void loadFeatures(vector<vector<Descriptor>>& features);
+void changeStructure(const cv::Mat& plain, vector<Descriptor>& out);
+void testVocCreation(const vector<vector<Descriptor>>& features);
+void testDatabase(const vector<vector<Descriptor>>& features);
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -44,7 +46,7 @@ void wait()
 
 int main()
 {
-    vector<vector<cv::Mat>> features;
+    vector<vector<Descriptor>> features;
     loadFeatures(features);
 
     testVocCreation(features);
@@ -58,7 +60,7 @@ int main()
 
 // ----------------------------------------------------------------------------
 
-void loadFeatures(vector<vector<cv::Mat>>& features)
+void loadFeatures(vector<vector<Descriptor>>& features)
 {
     features.clear();
     features.reserve(NIMAGES);
@@ -78,26 +80,33 @@ void loadFeatures(vector<vector<cv::Mat>>& features)
 
         orb->detectAndCompute(image, mask, keypoints, descriptors);
 
-        features.push_back(vector<cv::Mat>());
+        features.push_back(vector<Descriptor>());
         changeStructure(descriptors, features.back());
     }
 }
 
 // ----------------------------------------------------------------------------
 
-void changeStructure(const cv::Mat& plain, vector<cv::Mat>& out)
+void changeStructure(const cv::Mat& plain, vector<Descriptor>& out)
 {
     out.resize(plain.rows);
 
     for (int i = 0; i < plain.rows; ++i)
     {
-        out[i] = plain.row(i);
+        auto ptr = (int32_t*)plain.ptr(i);
+        //        out[i].create(1, 32, CV_8UC1);
+        auto outptr = (int32_t*)out[i].data();
+        for (auto j = 0; j < 8; ++j)
+        {
+            //            out[i][j] = ptr[j];
+            outptr[j] = ptr[j];
+        }
     }
 }
 
 // ----------------------------------------------------------------------------
 
-void testVocCreation(const vector<vector<cv::Mat>>& features)
+void testVocCreation(const vector<vector<Descriptor>>& features)
 {
     // branching factor and depth levels
     const int k                = 9;
@@ -130,7 +139,7 @@ void testVocCreation(const vector<vector<cv::Mat>>& features)
 
     // save the vocabulary to disk
     cout << endl << "Saving vocabulary..." << endl;
-    voc.save("small_voc.yml.gz");
+    //    voc.save("small_voc.yml.gz");
     voc.saveRaw("small_voc.voca");
 
     cout << voc << endl;
@@ -145,7 +154,7 @@ void testVocCreation(const vector<vector<cv::Mat>>& features)
 
 // ----------------------------------------------------------------------------
 
-void testDatabase(const vector<vector<cv::Mat>>& features)
+void testDatabase(const vector<vector<Descriptor>>& features)
 {
     cout << "Creating a small database..." << endl;
 
@@ -166,7 +175,6 @@ void testDatabase(const vector<vector<cv::Mat>>& features)
 
     cout << "... done!" << endl;
 
-    cout << "Database information: " << endl << db << endl;
 
     // and query the database
     cout << "Querying the database: " << endl;
@@ -183,17 +191,6 @@ void testDatabase(const vector<vector<cv::Mat>>& features)
     }
 
     cout << endl;
-
-    // we can save the database. The created file includes the vocabulary
-    // and the entries added
-    cout << "Saving database..." << endl;
-    db.save("small_db.yml.gz");
-    cout << "... done!" << endl;
-
-    // once saved, we can load it again
-    cout << "Retrieving database once again..." << endl;
-    OrbDatabase db2("small_db.yml.gz");
-    cout << "... done! This is: " << endl << db2 << endl;
 }
 
 // ----------------------------------------------------------------------------
