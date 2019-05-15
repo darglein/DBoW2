@@ -1,9 +1,18 @@
 /**
- * File: TemplatedVocabulary.h
- * Date: February 2011
- * Author: Dorian Galvez-Lopez
- * Description: templated vocabulary
- * License: see the LICENSE.txt file
+ * Original File: TemplatedVocabulary.h
+ * Original Author: Dorian Galvez-Lopez
+ *
+ * Modified by: Darius Rückert
+ * Modifications:
+ *  - Moved everything into this single header file
+ *  - Removed support for non-ORB feature descriptors
+ *  - Optimized loading, saving, matching
+ *  - Removed dependency to opencv
+ *
+ * Original License: BSD-like
+ *          https://github.com/dorian3d/DBoW2/blob/master/LICENSE.txt
+ * License of modifications: MIT
+ *          https://github.com/darglein/DBoW2/blob/master/LICENSE.txt
  *
  */
 #pragma once

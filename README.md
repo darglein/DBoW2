@@ -1,3 +1,20 @@
+# MiniBoW
+
+A single file bag-of-word library for ORB feature-matching. The following modifications were made to the original DBoW2 library:
+
+* Removed all descriptors except ORB
+* Removed all norms and scorings, which are not used for ORB matching
+* Removed the 'DataBase' class
+* Removed the dependency to OpenCV
+* Optimized loading, storing, and matching performance
+* Moved everything into a single header file
+
+### License
+
+* The original license can be found (https://github.com/dorian3d/DBoW2/blob/master/LICENSE.txt)[here]
+* The modifications are licensed under MIT (see LICENSE.txt)
+
+
 DBoW2
 =====
 

@@ -1,9 +1,17 @@
 /**
- * File: Demo.cpp
- * Date: November 2011
- * Author: Dorian Galvez-Lopez
- * Description: demo application of DBoW2
- * License: see the LICENSE.txt file
+ * Original File: demo.cpp
+ * Original Author: Dorian Galvez-Lopez
+ *
+ * Modified by: Darius Rückert
+ * Modifications:
+ *  - Updated vocabulary tests
+ *  - Removed database tests
+ *
+ * Original License: BSD-like
+ *          https://github.com/dorian3d/DBoW2/blob/master/LICENSE.txt
+ * License of modifications: MIT
+ *          https://github.com/darglein/DBoW2/blob/master/LICENSE.txt
+ *
  */
 
 
