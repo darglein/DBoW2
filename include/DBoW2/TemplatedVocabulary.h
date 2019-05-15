@@ -558,7 +558,12 @@ void TemplatedVocabulary<TDescriptor, F>::HKmeansStep(NodeId parent_id, const st
         for (unsigned int i = 0; i < descriptors.size(); i++)
         {
             groups[i].push_back(i);
+
+#ifdef USE_CV_FORB
+            clusters.push_back(descriptors[i]->clone());
+#else
             clusters.push_back(*descriptors[i]);
+#endif
         }
     }
     else
@@ -746,8 +751,12 @@ void TemplatedVocabulary<TDescriptor, F>::initiateClustersKMpp(const std::vector
 
     int ifeature = RandomInt(0, pfeatures.size() - 1);
 
-    // create first cluster
+// create first cluster
+#ifdef USE_CV_FORB
+    clusters.push_back(pfeatures[ifeature]->clone());
+#else
     clusters.push_back(*pfeatures[ifeature]);
+#endif
 
     // compute the initial distances
     typename std::vector<pDescriptor>::const_iterator fit;
@@ -794,7 +803,11 @@ void TemplatedVocabulary<TDescriptor, F>::initiateClustersKMpp(const std::vector
             else
                 ifeature = dit - min_dists.begin();
 
+#ifdef USE_CV_FORB
+            clusters.push_back(pfeatures[ifeature]->clone());
+#else
             clusters.push_back(*pfeatures[ifeature]);
+#endif
 
         }  // if dist_sum > 0
         else
@@ -1012,6 +1025,7 @@ void TemplatedVocabulary<TDescriptor, F>::transform(const std::vector<TDescripto
 {
     v.clear();
     fv.clear();
+
 
     if (empty())  // safe for subclasses
     {

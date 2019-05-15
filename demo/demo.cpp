@@ -94,8 +94,13 @@ void changeStructure(const cv::Mat& plain, vector<Descriptor>& out)
     for (int i = 0; i < plain.rows; ++i)
     {
         auto ptr = (int32_t*)plain.ptr(i);
-        //        out[i].create(1, 32, CV_8UC1);
+
+#ifdef USE_CV_FORB
+        out[i].create(1, 32, CV_8UC1);
+        auto outptr = (int32_t*)out[i].data;
+#else
         auto outptr = (int32_t*)out[i].data();
+#endif
         for (auto j = 0; j < 8; ++j)
         {
             //            out[i][j] = ptr[j];
@@ -118,24 +123,41 @@ void testVocCreation(const vector<vector<Descriptor>>& features)
 
     cout << "Creating a small " << k << "^" << L << " vocabulary..." << endl;
     voc.create(features);
+    cout << "Vocabulary information: " << endl << voc << endl << endl;
+
+
+    //    exit(0);
     cout << "... done!" << endl;
 
-    cout << "Vocabulary information: " << endl << voc << endl << endl;
 
     // lets do something with this vocabulary
     cout << "Matching images against themselves (0 low, 1 high): " << endl;
     BowVector v1, v2;
-    for (int i = 0; i < NIMAGES; i++)
-    {
-        voc.transform(features[i], v1);
-        for (int j = 0; j < NIMAGES; j++)
-        {
-            voc.transform(features[j], v2);
 
-            double score = voc.score(v1, v2);
-            cout << "Image " << i << " vs Image " << j << ": " << score << endl;
+    double out = 0;
+
+
+    //    exit(0);
+    cv::TickMeter tm;
+    tm.start();
+    //    for (int i = 0; i < 100; ++i)
+    {
+        for (int i = 0; i < NIMAGES; i++)
+        {
+            voc.transform(features[i], v1);
+            for (int j = 0; j < NIMAGES; j++)
+            {
+                voc.transform(features[j], v2);
+
+                double score = voc.score(v1, v2);
+                out += score;
+                cout << "Image " << i << " vs Image " << j << ": " << score << endl;
+            }
         }
     }
+    tm.stop();
+    cout << tm.getTimeMilli() << " " << out << endl;
+    exit(0);
 
     // save the vocabulary to disk
     cout << endl << "Saving vocabulary..." << endl;
