@@ -9,10 +9,15 @@ A single file bag-of-word library for ORB feature-matching. The following modifi
 * Optimized loading, storing, and matching performance
 * Moved everything into a single header file
 
+### Usage 
+
+* Copy the file `MiniBow.h` into your project.
+* Use the provided ORB vocabulary `ORBvoc.minibow` or create your own (see demo.cpp for help)
+
 ### License
 
-* The original license can be found (https://github.com/dorian3d/DBoW2/blob/master/LICENSE.txt)[here]
-* The modifications are licensed under MIT (see LICENSE.txt)
+* The original license can be found [here](https://github.com/dorian3d/DBoW2/blob/master/LICENSE.txt)
+* The modifications are licensed under [MIT](LICENSE.txt)
 
 
 DBoW2
